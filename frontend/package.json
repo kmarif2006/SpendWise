@@ -10,6 +10,7 @@
     "@testing-library/user-event": "^7.2.1",
     "axios": "^0.25.0",
     "chart.js": "^4.3.2",
+    "compressorjs": "^1.2.1",
     "dayjs": "^1.11.6",
     "flowbite": "^1.7.0",
     "react": "^17.0.2",

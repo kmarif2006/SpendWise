@@ -10,14 +10,17 @@ import Bill from './pages/Bill';
 import Sidebar from './components/common/Sidebar';
 import BottomBar from './components/common/BottomBar';
 import Colab from './pages/Colab';
+import { ThemeProvider } from './context/ThemeContext';
+
+
 function App() {
   return (
-    <>
+    <ThemeProvider>
       <Router>
         <AppContent />
       </Router>
       <ToastContainer />
-    </>
+    </ThemeProvider>
   );
 }
 
