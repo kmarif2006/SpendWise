@@ -1,100 +1,226 @@
 import React, { useEffect, useState } from 'react';
+import Chart from "react-apexcharts";
+import { useTheme } from '../../context/ThemeContext';
 
-const ExpenseBarChart = ({ expenses }) => {
-    const [hoveredWeekTotal, setHoveredWeekTotal] = useState(null);
-    const [chartData, setChartData] = useState([]);
-    const [maxTotalExpense, setMaxTotalExpense] = useState(0);
+function BarChart({ expenses, selectedDateRange, selectedTag }) {
+  const { darkMode } = useTheme();
+  const [chartData, setChartData] = useState({
+    options: {
+      chart: {
+        id: "expense-chart",
+        toolbar: {
+          show: true,
+          tools: {
+            download: true,
+            selection: false,
+            zoom: false,
+            zoomin: false,
+            zoomout: false,
+            pan: false,
+            reset: false
+          }
+        },
+        background: 'transparent',
+        animations: {
+          enabled: true,
+          easing: 'easeinout',
+          speed: 800,
+          animateGradually: {
+            enabled: true,
+            delay: 150
+          },
+          dynamicAnimation: {
+            enabled: true,
+            speed: 350
+          }
+        }
+      },
+      colors: ['#3B82F6'],
+      theme: {
+        mode: darkMode ? 'dark' : 'light',
+        palette: 'palette1'
+      },
+      plotOptions: {
+        bar: {
+          borderRadius: 8,
+          columnWidth: '60%',
+          distributed: false,
+          rangeBarOverlap: true,
+          rangeBarGroupRows: false,
+          dataLabels: {
+            position: 'top'
+          }
+        }
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: function (val) {
+          return '₹' + val.toFixed(0);
+        },
+        offsetY: -20,
+        style: {
+          fontSize: '12px',
+          colors: [darkMode ? '#e5e7eb' : '#374151']
+        }
+      },
+      xaxis: {
+        categories: [],
+        axisBorder: {
+          show: false
+        },
+        axisTicks: {
+          show: false
+        },
+        labels: {
+          style: {
+            colors: darkMode ? '#e5e7eb' : '#374151',
+            fontFamily: "'Nunito Sans', sans-serif",
+            fontSize: '12px'
+          },
+          rotate: -45,
+          rotateAlways: false
+        }
+      },
+      yaxis: {
+        labels: {
+          style: {
+            colors: darkMode ? '#e5e7eb' : '#374151',
+            fontFamily: "'Nunito Sans', sans-serif"
+          },
+          formatter: (value) => `₹${value.toFixed(0)}`
+        }
+      },
+      grid: {
+        borderColor: darkMode ? '#374151' : '#e5e7eb',
+        strokeDashArray: 4,
+        xaxis: {
+          lines: {
+            show: true
+          }
+        },
+        yaxis: {
+          lines: {
+            show: true
+          }
+        },
+        padding: {
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0
+        }
+      },
+      tooltip: {
+        theme: darkMode ? 'dark' : 'light',
+        y: {
+          formatter: (value) => `₹${value.toFixed(2)}`
+        },
+        x: {
+          formatter: (value) => `Week of ${value}`
+        }
+      },
+      states: {
+        hover: {
+          filter: {
+            type: 'lighten',
+            value: 0.15
+          }
+        },
+        active: {
+          allowMultipleDataPointsSelection: false,
+          filter: {
+            type: 'darken',
+            value: 0.35
+          }
+        }
+      }
+    },
+    series: [{
+      name: 'Expenses',
+      data: []
+    }]
+  });
 
+  useEffect(() => {
+    const processExpenseData = () => {
+      // Filter expenses based on selected tag
+      let filteredExpenses = expenses;
+      if (selectedTag && selectedTag !== 'All Categories') {
+        filteredExpenses = expenses.filter(expense => expense.tag === selectedTag);
+      }
 
-    // const handleBarMouseLeave = () => {
-    //     setTooltipExpense(null);
-    // };
-    // const handleBarMouseMove = (event, index) => {
-    //     const rect = event.currentTarget.getBoundingClientRect();
-    //     const x = rect.right - event.clientX; // Calculate relative to right edge
-    //     const y = rect.bottom - event.clientY; // Calculate relative to bottom edge
-    //     setTooltipPosition({ x, y });
-    //     setTooltipExpense(chartData[index].total.toFixed(2));
-    // };
-    const handleBarMouseEnter = (index) => {
-        setHoveredWeekTotal(chartData[index].total.toFixed(1));
+      // Filter expenses based on date range
+      if (selectedDateRange) {
+        const startDate = new Date(selectedDateRange.startDate);
+        const endDate = new Date(selectedDateRange.endDate);
+        filteredExpenses = filteredExpenses.filter(expense => {
+          const expenseDate = new Date(expense.date);
+          return expenseDate >= startDate && expenseDate <= endDate;
+        });
+      }
 
+      // Group expenses by week
+      const weeklyData = new Map();
+      filteredExpenses.forEach(expense => {
+        const expenseDate = new Date(expense.date);
+        const weekStart = new Date(expenseDate);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+        const weekKey = weekStart.toISOString().split('T')[0];
+        
+        weeklyData.set(weekKey, (weeklyData.get(weekKey) || 0) + Number(expense.cost));
+      });
+
+      // Sort weeks and prepare chart data
+      const sortedWeeks = Array.from(weeklyData.keys()).sort();
+      const categories = sortedWeeks.map(week => {
+        const date = new Date(week);
+        return date.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric',
+          year: 'numeric'
+        });
+      });
+      
+      const data = sortedWeeks.map(week => weeklyData.get(week));
+
+      // Update chart data
+      setChartData(prevState => ({
+        ...prevState,
+        options: {
+          ...prevState.options,
+          xaxis: {
+            ...prevState.options.xaxis,
+            categories
+          },
+          theme: {
+            mode: darkMode ? 'dark' : 'light'
+          }
+        },
+        series: [{
+          name: selectedTag || 'All Expenses',
+          data
+        }]
+      }));
     };
 
-    const handleBarMouseLeave = () => {
-        setHoveredWeekTotal(null);
-    };
-    useEffect(() => {
-        // Function to group expenses by week and calculate total expense for each week
-        const groupExpensesByWeek = (expenses) => {
-            const today = new Date();
-            const lastFourWeeks = [...Array(4)].map((_, i) => {
-                const startOfWeek = new Date(today);
-                startOfWeek.setDate(today.getDate() - i * 7);
-                startOfWeek.setHours(0, 0, 0, 0);
-                const endOfWeek = new Date(startOfWeek);
-                endOfWeek.setDate(startOfWeek.getDate() + 6);
-                return {
-                    start: startOfWeek,
-                    end: endOfWeek,
-                    total: 0,
-                };
-            });
+    processExpenseData();
+  }, [expenses, darkMode, selectedDateRange, selectedTag]);
 
-            expenses.forEach((expense) => {
-                const expenseDate = new Date(expense.date);
-                lastFourWeeks.forEach((week) => {
-                    if (expenseDate >= week.start && expenseDate <= week.end) {
-                        week.total += expense.cost;
-                    }
-                });
-            });
+  return (
+    <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4">
+      <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+        Expense Trends
+      </h3>
+      <div className="h-[400px]">
+        <Chart
+          options={chartData.options}
+          series={chartData.series}
+          type="bar"
+          height="100%"
+        />
+      </div>
+    </div>
+  );
+}
 
-            // Calculate the maximum total expense
-            const maxTotal = Math.max(...lastFourWeeks.map((week) => week.total));
-            setMaxTotalExpense(maxTotal);
-
-            return lastFourWeeks;
-        };
-
-        const lastFourWeeksData = groupExpensesByWeek(expenses);
-
-        setChartData(lastFourWeeksData);
-    }, [expenses]);
-
-    return (<>
-        <div className="w-full max-w-md mx-auto mb-4">
-            <div className={`flex text-gray-500 px-4 ${hoveredWeekTotal !== null ? "justify-between" : "justify-end"}`}>
-                {/* <span>Total Expense: {hoveredWeekTotal}</span> */}
-                {hoveredWeekTotal !== null && (
-                    <span className="text-black inline rounded-md px-2 nuns-font-700">
-                        Expense: <span className='nuns-font-500'>{hoveredWeekTotal}</span>
-                    </span>
-                )}
-                <div>Weekly Activity </div>
-            </div>
-            <hr className='mt-3 mb-6 mx-4' />
-            <div className="flex justify-between px-6">
-                {chartData.map((week, index) => (
-                    <div
-                        key={index}
-                        className="flex flex-col items-center justify-end group"
-                        onMouseEnter={() => handleBarMouseEnter(index)}
-                        onMouseLeave={handleBarMouseLeave}
-                    >
-                        <div className="w-2 bg-[#F2F7FF] flex flex-col rounded-[10px] justify-end h-[200px] group-hover:scale-[1.05] duration-[300ms]">
-                            <div
-                                className="bg-[#1B59F8] w-2 rounded-[10px] "
-                                style={{ height: `${(week.total / maxTotalExpense) * 100}%` }}
-                            />
-                        </div>
-                        <span className="text-sm nuns-font-500 mt-2 group-hover:scale-[1.1] duration-[300ms]">Week {index + 1}</span>
-                    </div>
-                ))}
-            </div>
-        </div>
-        </>
-    );
-};
-
-export default ExpenseBarChart;
+export default BarChart;

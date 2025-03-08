@@ -1,59 +1,53 @@
-import React, { useEffect, useState } from "react";
-import { getColabs, reset } from "../features/colabs/colabSlice";
-import ColabForm from "../components/colabs/ColabAdd";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import Spinner from "../components/common/Spinner";
-import DisplayColabs from "../components/colabs/DisplayColabs"
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
+import DisplayColabs from '../components/colabs/DisplayColabs';
+import ColabForm from '../components/colabs/ColabAdd';
+import Spinner from '../components/common/Spinner';
+
 function Colab() {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
-  const { colabs, isLoading, isError, message, total } = useSelector(
-    (state) => state.colabs
-  );
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddColabOpen, setIsAddColabOpen] = useState(false);
+  const { colabs, isLoading } = useSelector((state) => state.colabs);
 
-  const openDialog = () => {
-    setIsDialogOpen(true);
-  };
-  const closeDialog = () => {
-    setIsDialogOpen(false);
-  };
-  useEffect(() => {
-    if (isError) {
-      console.log(message);
-    }
-
-    if (!user) {
-      navigate("/");
-    }
-    dispatch(getColabs());
-
-    return () => {
-      dispatch(reset());
-    };
-  }, [user, navigate, isError, message, dispatch]);
   if (isLoading) {
     return <Spinner />;
   }
-  return (
-    <div>
-    <div className="absolute top-4 right-4"><img src={user.image} className="w-14 h-14 rounded-full object-cover hover:scale-[1.1] duration-[300ms]"></img></div>
 
-    <DisplayColabs colabs={colabs}/>
-      <div className="fixed bottom-20 md:bottom-6 right-6 flex items-end justify-end">
+  return (
+    <div className="container mx-auto px-4">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold dark:text-white">Collaborations</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Manage your shared expenses with friends and family
+          </p>
+        </div>
         <button
-          onClick={openDialog}
-          className="duration-[300ms] hover:shadow-[0px_4px_16px_rgba(17,17,26,0.1),_0px_8px_24px_rgba(17,17,26,0.1),_0px_16px_56px_rgba(17,17,26,0.1)] shadow-lg w-12 h-12 text-2xl bg-white rounded-full"
+          onClick={() => setIsAddColabOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg 
+                     shadow-lg hover:shadow-xl transition duration-300 flex items-center space-x-2"
         >
-          +
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>New Collaboration</span>
         </button>
-        {isDialogOpen && <ColabForm onClose={closeDialog} />}
       </div>
+
+      {colabs?.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-gray-500 dark:text-gray-400">
+            No collaborations yet. Start by creating one!
+          </div>
+        </div>
+      ) : (
+        <DisplayColabs colabs={colabs} />
+      )}
+
+      {isAddColabOpen && (
+        <ColabForm onClose={() => setIsAddColabOpen(false)} />
+      )}
     </div>
-  )
+  );
 }
 
-export default Colab
+export default Colab;
