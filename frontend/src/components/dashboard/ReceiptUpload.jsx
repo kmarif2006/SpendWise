@@ -1,56 +1,48 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { preprocessImage } from '../../utils/imageProcessing';
 import { createWorker } from 'tesseract.js';
 import { useDispatch } from 'react-redux';
 import { createExpense } from '../../features/expenses/expenseSlice';
 import { toast } from 'react-toastify';
 
 function ReceiptUpload({ onClose }) {
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [preview, setPreview] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState(null);
   const dispatch = useDispatch();
 
   const onDrop = useCallback(async (acceptedFiles) => {
-    const file = acceptedFiles[0];
-    if (!file) return;
-
-    // Show preview
-    setPreview(URL.createObjectURL(file));
-    setIsProcessing(true);
-
     try {
-      const worker = await createWorker();
-      await worker.loadLanguage('eng');
-      await worker.initialize('eng');
-      const { data: { text } } = await worker.recognize(file);
-      await worker.terminate();
+      const file = acceptedFiles[0];
+      if (!file) return;
 
-      // Process the text to extract information
-      const amount = extractAmount(text);
-      const date = extractDate(text);
-      const description = extractDescription(text);
+      setProcessing(true);
+      setError(null);
+      
+      // Create preview
+      const previewUrl = URL.createObjectURL(file);
+      setPreview(previewUrl);
 
-      if (amount) {
-        dispatch(createExpense({
-          amount: parseFloat(amount),
-          description: description || 'Receipt Expense',
-          date: date || new Date().toISOString(),
-          tag: 'Shopping'
-        }));
-        toast.success('Receipt processed successfully');
-        onClose();
-      } else {
-        toast.error('Could not extract amount from receipt');
-      }
-    } catch (error) {
-      console.error('OCR Error:', error);
-      toast.error('Error processing receipt');
+      // Process image
+      const processedImage = await preprocessImage(file, (progress) => {
+        setProgress(Math.round(progress * 100));
+      });
+
+      // Handle the processed image...
+      console.log('Processed image:', processedImage);
+      
+    } catch (err) {
+      setError(err.message);
+      console.error('Error processing receipt:', err);
     } finally {
-      setIsProcessing(false);
+      setProcessing(false);
+      setProgress(0);
     }
-  }, [dispatch, onClose]);
+  }, []);
 
-  const { getRootProps, getInputProps } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
       'image/*': ['.jpeg', '.jpg', '.png']
@@ -63,18 +55,44 @@ function ReceiptUpload({ onClose }) {
       <div className="bg-white rounded-lg p-6 max-w-md w-full">
         <h2 className="text-xl font-semibold mb-4">Upload Receipt</h2>
         
-        <div {...getRootProps()} className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-500 transition-colors">
+        <div
+          {...getRootProps()}
+          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
+            ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
+        >
           <input {...getInputProps()} />
-          {preview ? (
-            <img src={preview} alt="Receipt preview" className="max-h-48 mx-auto" />
+          {isDragActive ? (
+            <p>Drop the receipt here...</p>
           ) : (
-            <p>Drag & drop a receipt image here, or click to select one</p>
+            <p>Drag & drop a receipt, or click to select one</p>
           )}
         </div>
 
-        {isProcessing && (
-          <div className="mt-4 text-center text-gray-600">
-            Processing receipt...
+        {processing && (
+          <div className="mt-4">
+            <p>Processing... {progress}%</p>
+            <div className="w-full bg-gray-200 rounded">
+              <div 
+                className="bg-blue-600 h-2 rounded"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-4 text-red-500">
+            Error: {error}
+          </div>
+        )}
+
+        {preview && !processing && (
+          <div className="mt-4">
+            <img 
+              src={preview} 
+              alt="Receipt preview" 
+              className="max-w-full h-auto rounded"
+            />
           </div>
         )}
 
