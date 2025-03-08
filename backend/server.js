@@ -4,15 +4,21 @@ const colors = require('colors');
 const dotenv = require('dotenv').config();
 const { errorHandler } = require('./middleware/errorMiddleware');
 const connectDB = require('./config/db');
-const port = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 const bodyParser = require('body-parser');
 const { protect } = require('./middleware/authMiddleware')
+const cors = require('cors');
 
 
 connectDB();
 
 const app = express();
 
+// Enable CORS for frontend
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 
 app.use(bodyParser.json());
 app.use(express.json());
@@ -42,4 +48,6 @@ app.use(errorHandler);
 // app.use(protect);
 // console.log(req.user.id)
 
-app.listen(port, () => console.log(`Server started on port ${port}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
