@@ -1,1 +1,35 @@
-node_modules
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+*.swp
+
+# Ignore dependency directories
+node_modules/
+vendor/
+
+# Ignore compiled files
+*.class
+*.o
+*.so
+*.dll
+*.exe
+
+# Ignore environment files
+.env
+*.local
+
+# Ignore IDE/editor files
+.vscode/
+.idea/
+*.iml
+
+# Ignore build and cache files
+dist/
+build/
+.cache/
+__pycache__/
+*.pyc
