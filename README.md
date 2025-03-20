@@ -2,18 +2,12 @@
 
 Spendometer is a comprehensive personal finance tracker that simplifies money management. With powerful budgeting tools and insightful analytics, it empowers users to take control of their finances and achieve their financial goals. User Dashboard gives insights about the spending trend so they are better informed about their daily, weekly, montly expenses.
 
-
-
-View the Figma Design [here](https://www.figma.com/file/7VIQvMboevTR3oG2uBrOyT/Spend-o-Meter?type=design&node-id=0%3A1&mode=design&t=jaUgqyDcZQlOHLgy-1)
-
 ## Features
 - **Dashboard Page**: Add, delete, and edit expenses to track your spending and categorize your expenses for better organization. The dashboard provides an overview of your expenses, bills and savings, allowing you to get a snapshot of your financial situation. Filter the expense wrt the tags and time of expense.
 - **Collaboration Feature**: Enable collaboration between users, allowing them to share and collaborate on expense tracking. Users can invite others to join their financial group, share expenses, and view real-time updates. This feature promotes financial transparency and facilitates joint expense management, such as shared household expenses or group trips.
 - **Savings Page**: Define financial goals, such as saving for a vacation or a down payment on a house. The system helps you calculate the required savings amount based on your goal and desired timeframe. Track your progress towards your savings goals and allocate funds from your income accordingly.
 - **Subscriptions and Recurrent Bills Page**: Manage your subscriptions and recurring bills in one place. Add, view, and update your subscriptions and bills, including payment amounts, due dates, and payment methods.
 
-## Architectural Flow
-![flow](https://github.com/Fastest-Coder-First/Dracarys/assets/91118866/5bf5cec1-0c7f-4523-a46a-e18d3cb3ef0f)
 
 ## Additional Features (Future Scopes)
 
