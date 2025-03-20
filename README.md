@@ -2,11 +2,7 @@
 
 Spendometer is a comprehensive personal finance tracker that simplifies money management. With powerful budgeting tools and insightful analytics, it empowers users to take control of their finances and achieve their financial goals. User Dashboard gives insights about the spending trend so they are better informed about their daily, weekly, montly expenses.
 
-## Demo Screenshots/Video
 
-[DEMO](https://drive.google.com/file/d/1WKMynFp388SH4qOKwDQvRNEoWu3vwhm-/view?usp=sharing) 
-
-Try it out at https://spend-o-meter-main.onrender.com/
 
 View the Figma Design [here](https://www.figma.com/file/7VIQvMboevTR3oG2uBrOyT/Spend-o-Meter?type=design&node-id=0%3A1&mode=design&t=jaUgqyDcZQlOHLgy-1)
 
